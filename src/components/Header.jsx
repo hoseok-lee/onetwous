@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Link, NavLink } from 'react-router'
+import { Link, NavLink, useLocation } from 'react-router'
 import { sections } from '../sections.js'
 
 function Header() {
   const [scrolled, setScrolled] = useState(false)
+  const location = useLocation()
+  const isHome = location.pathname === '/home'
+  const isIntro = isHome && location.state?.fromLanding
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 0)
@@ -13,18 +16,22 @@ function Header() {
   }, [])
 
   return (
-    <header className={scrolled ? 'site-header scrolled' : 'site-header'}>
-      <Link className="logo" to="/home">
+    <header
+      className={['site-header', scrolled && 'scrolled', isHome && 'home', isIntro && 'intro']
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <Link className="logo" to="/home" viewTransition>
         OneTwoUs
       </Link>
       <nav>
         {sections.map(({ path, title }) => (
-          <NavLink key={path} to={path}>
+          <NavLink key={path} to={path} viewTransition>
             {title}
           </NavLink>
         ))}
       </nav>
-      <Link className="contact-link" to="/contact" aria-label="Contact">
+      <Link className="contact-link" to="/contact" aria-label="Contact" viewTransition>
         <svg
           viewBox="0 0 24 24"
           fill="none"

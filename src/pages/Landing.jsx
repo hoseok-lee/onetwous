@@ -16,7 +16,9 @@ function Landing() {
         onError={() => setFinished(true)}
       />
       <h1>
-        <Link to="/home">OneTwoUs</Link>
+        <Link to="/home" state={{ fromLanding: true }} viewTransition>
+          OneTwoUs
+        </Link>
       </h1>
     </main>
   )

@@ -5,10 +5,11 @@
   --text: #3b322a;
   --muted: #6f6052;
   --accent: #94552f;
-  --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font: 'Montserrat', system-ui, -apple-system, sans-serif;
+  /* Shared by the landing title and the home-page logo so they line up. */
+  --logo-size: 3rem;
 
-  font-family: var(--font-serif);
+  font-family: var(--font);
   font-size: 1.125rem;
   line-height: 1.7;
   color-scheme: light;
@@ -48,7 +49,7 @@ h6 {
 }
 
 main {
-  max-width: 720px;
+  max-width: 30rem;
   margin: 0 auto;
   padding: 2rem;
 }
@@ -69,7 +70,7 @@ button {
   max-width: none;
   min-height: 100svh;
   box-sizing: border-box;
-  --title-size: clamp(2.5rem, 8vw, 5rem);
+  --title-size: var(--logo-size);
 }
 
 /* Video and title share one grid cell so they cross-fade in place. */
@@ -94,9 +95,14 @@ button {
   pointer-events: none;
 }
 
+/* Same font metrics as the home logo, and dead centre of the screen, which is
+   where the home page puts its logo. */
 .landing h1 {
   font-size: var(--title-size);
+  line-height: 1;
+  letter-spacing: normal;
   text-align: center;
+  view-transition-name: site-logo;
   opacity: 0;
   visibility: hidden;
 }
@@ -141,47 +147,66 @@ button {
   }
 }
 
-/* Floats over every page except the landing page. Its outline shows only on
-   hover or focus; its frosted panel shows only once the page is scrolled. */
+/* Fills the window behind everything, cropping the video to cover it. */
+.home-video {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  /* Black shows until the video loads. brightness() darkens exactly as the
+     same opacity over black would, without needing a separate black layer. */
+  background: #000;
+  filter: brightness(0.4);
+}
+
+:root:has(.home-video) {
+  background: #000;
+}
+
+/* Arriving from the landing page, the video rises slowly out of black. */
+.home-video.intro {
+  animation: intro-fade-in 2.5s ease 0.4s backwards;
+}
+
+@keyframes intro-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* A small frosted card pinned to the top left of every page except the
+   landing page; it gains a soft shadow once the page is scrolled. */
 .site-header {
   position: fixed;
   top: 1rem;
-  left: 50%;
+  left: 1rem;
   z-index: 10;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 0.75rem;
   box-sizing: border-box;
-  width: max-content;
-  max-width: calc(100% - 2rem);
-  padding: 1rem 1.5rem;
-  border: 1px solid transparent;
-  border-radius: 14px;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background-color: color-mix(in srgb, var(--bg) 80%, transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   color: var(--text);
   line-height: 1;
-  transform: translateX(-50%);
-  transition:
-    border-color 0.26s ease,
-    background-color 0.26s ease,
-    box-shadow 0.26s ease;
+  opacity: 0.8;
+  transition: box-shadow 0.26s ease;
 }
-/*
-.site-header:hover,
-.site-header:focus-within {
-  border-color: currentColor;
-}*/
 
 .site-header.scrolled {
-  background-color: color-mix(in srgb, var(--bg) 70%, transparent);
-  box-shadow: 0 10px 30px rgb(59 50 42 / 0.1);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
+  box-shadow: 0 6px 20px rgb(59 50 42 / 0.08);
 }
 
-/* Keeps page content clear of the floating header. */
+/* The header may overlap page content, so only a little breathing room. */
 .site-header + main {
-  padding-top: 9rem;
+  padding-top: 4rem;
 }
 
 .site-header a {
@@ -190,15 +215,15 @@ button {
 }
 
 .site-header .logo {
-  font-size: 2rem;
-  padding-bottom: 0.5rem;
+  font-size: 1.15rem;
+  padding-right: 1.75rem;
 }
 
-/* Pinned to the header's right edge, level with the logo. */
+/* Pinned to the card's top-right corner, level with the logo. */
 .site-header .contact-link {
   position: absolute;
-  top: 1.375rem;
-  right: 1.5rem;
+  top: 0.75rem;
+  right: 0.9rem;
   display: flex;
   opacity: 0.7;
   transition: opacity 0.2s ease;
@@ -210,24 +235,23 @@ button {
 }
 
 .site-header .contact-link svg {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1rem;
+  height: 1rem;
 }
 
 .site-header nav {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.75rem 2rem;
-  font-family: var(--font-sans);
-  font-size: 0.7rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.62rem;
   letter-spacing: 0.12em;
   color: var(--muted);
   text-transform: uppercase;
 }
 
 .site-header nav a {
-  padding-bottom: 0.25rem;
+  padding-bottom: 0.15rem;
   border-bottom: 1px solid transparent;
 }
 
@@ -235,4 +259,107 @@ button {
 .site-header nav a.active {
   color: var(--text);
   border-bottom-color: currentColor;
+}
+
+/* On the home page the header becomes the centrepiece: a wide card in the
+   middle of the screen with everything centred in one column. */
+.site-header.home {
+  top: 50%;
+  left: 50%;
+  align-items: center;
+  gap: 1.75rem;
+  width: min(56rem, calc(100% - 2rem));
+  padding: 2.75rem 3rem;
+  border-radius: 14px;
+  /* Centres the logo itself on the screen (not the whole card), matching the
+     landing title; the links hang below it. */
+  transform: translate(-50%, calc(-1px - 2.75rem - var(--logo-size) / 2));
+  /* Sits straight on the video: no panel or border, white text. */
+  border-color: transparent;
+  background-color: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  color: #fff;
+}
+
+.site-header.home .logo {
+  font-size: var(--logo-size);
+  padding-right: 0;
+}
+
+/* Arriving from the landing page: the logo fades in where the title was,
+   then the links follow. */
+.site-header.home.intro .logo {
+  animation: intro-fade-in 1.5s ease backwards;
+}
+
+.site-header.home.intro nav {
+  animation: intro-fade-in 1.8s ease 1s backwards;
+}
+
+/* One centred row; wraps onto more lines on narrow screens. */
+.site-header.home nav {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem 2rem;
+  font-size: 0.85rem;
+  color: #fff;
+}
+
+.site-header.home nav a:hover,
+.site-header.home nav a.active {
+  color: #fff;
+}
+
+.site-header.home .contact-link {
+  display: none;
+}
+
+/* Page changes from header links run as view transitions: the card and each
+   of its parts are captured separately, so the browser morphs every piece
+   from its old position and size to its new one. */
+.site-header {
+  view-transition-name: site-header;
+}
+
+.site-header .logo {
+  view-transition-name: site-logo;
+}
+
+.site-header nav {
+  view-transition-name: site-nav;
+}
+
+.site-header .contact-link {
+  view-transition-name: site-contact;
+}
+
+::view-transition-group(*) {
+  animation-duration: 0.6s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* The card is an empty box once its parts are lifted out, so stretching it
+   to the changing shape reads as the card reshaping. */
+::view-transition-old(site-header),
+::view-transition-new(site-header) {
+  height: 100%;
+}
+
+/* Lifted-out parts lose the card's opacity while they travel; restore it. */
+::view-transition-group(site-logo),
+::view-transition-group(site-nav),
+::view-transition-group(site-contact) {
+  opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  .intro,
+  .intro * {
+    animation: none !important;
+  }
 }
